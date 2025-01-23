@@ -1,10 +1,10 @@
-from flask import Flask, jsonify
-from flask_restx import Api, Resource
+from flask import Flask, jsonify, request
+from flask_restx import Api, Resource, fields
 from config import DevConfig
 from models import User
 from exts import db
 #from flask_sqlalchemy import SQLAlchemy
-#from flask_migrate import Migrate
+from flask_migrate import Migrate
 from flask_cors import CORS
 
 
@@ -14,12 +14,15 @@ CORS(app)
 
 db.init_app(app)
 
+
+migrate = Migrate(app, db)
+
 api = Api(app, doc='/docs')
 
 User_model = api.model(
     'User',
     {
-        'id': fields.Integer(description='The unique identifier of a user.'),
+        "id": fields.Integer(description='The unique identifier of a user.'),
         'name': fields.String(required=True, description='The name of the user.'),
         'email': fields.String(required=True, description='The email of the user.'),
         'phone_number': fields.String(required=True, description='The phone number of the user.')
@@ -32,29 +35,64 @@ class HelloResource(Resource):
         return {'message': 'Hello, World!'}
     
 @api.route('/User')
-class UserResource(Resource):
-    @api.marshal_list_with(User)
+class UsersResource(Resource):
+    @api.marshal_list_with(User_model)
     def get(self):
         
-        User=User.query.all()
+        users = User.query.all()
         
-        return User
+        return users
         
-    
+    @api.marshal_with(User_model)
     def post(self):
-        pass
+        
+        data=request.get_json()
+        
+        new_user=User(
+            name=data.get('name'),
+            email=data.get('email'),
+            phone_number=data.get('phone_number')
+        )
+        new_user.save()
+        
+        return new_user, 201
+           
+        
     
     
 @api.route('/User/<int:id>')
 class UserResource(Resource):
-     def get(self,id):
-         pass
      
+     @api.marshal_with(User_model)
+     def get(self,id):
+         #get user by id
+        user=User.query.get_or_404(id)
+        
+        return user
+    
+     @api.marshal_with(User_model)
      def put(self,id):
-         pass
+         
+         user_to_update=User.query.get_or_404(id)
+         
+         data=request.get_json()
+         
+         user_to_update.update(
+             data.get('name'),
+             data.get('email'),
+             data.get('phone_number')
+             
+         )
+         return user_to_update, 200
+     
+     @api.marshal_with(User_model)
      
      def delete(self, id):
-         pass
+         user_to_delete=User.query.get_or_404(id)
+         
+         user_to_delete.delete()
+         
+         return {'message': 'User deleted successfully.'}, 200
      
     
 @app.shell_context_processor
@@ -77,12 +115,7 @@ def make_shell_context():
 # class Itinerary(db.Model):
 #     __tablename__ = "Itineraries"
     
-#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False)
-#     destination = db.Column(db.String(100), nullable=False)
-#     details = db.Column(db.String(100), nullable=False)
-#     #budgets = db.relationship('Budget', backref='itinerary')
-#     date = db.Column(db.Date, nullable=False)
+
     
 #     def __init__(self, user_id, destination, date, details, budgets):
 #         self.user_id = user_id
