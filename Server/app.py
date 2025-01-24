@@ -8,16 +8,21 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify
+from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required
 
 
 app = Flask(__name__)
 app.config.from_object(DevConfig)
+#app.config['JWT_SECRET_KEY'] = 'password'  
+
 CORS(app)
 
 db.init_app(app)
 
 
 migrate = Migrate(app, db)
+
+jwt = JWTManager(app)
 
 api = Api(app, doc='/docs')
 
@@ -39,15 +44,24 @@ User_model = api.model(
         "id": fields.Integer(description='The unique identifier of a user.'),
         'username': fields.String(required=True, description='The name of the user.'),
         'email': fields.String(required=True, description='The email of the user.'),
-        'phone_number': fields.String(required=True, description='The phone number of the user.')
+        'phone_number': fields.String(required=True, description='The phone number of the user.'),
+        'password': fields.String(required=True, description= 'The password of the user.')
     }
-)
+    )
 signup_model = api.model(
     'Signup',
     {
         'username': fields.String(required=True, description='The username for the user.'),
         'email': fields.String(required=True, description='The email for the user.'),
         'phone_number': fields.String(required=True, description='The phone number for the user.'),
+        'password': fields.String(required=True, description='The password for the user.')
+    }
+    )
+
+login_model = api.model(
+    'Login',
+    {
+        'username': fields.String(required=True, description='The username for the user.'),
         'password': fields.String(required=True, description='The password for the user.')
     }
     )
@@ -68,25 +82,47 @@ class Signup(Resource):
         db_user=User.query.filter_by(username=username).first()
         
         if db_user is not None:
-            return jsonify({"message":f"user with username {username} already exists"})
+            return {"message":f"user with username {username} already exists"}
             
         new_user=User(
             username=data.get('username'),
             email=data.get('email'),
             phone_number=data.get('phone_number'),
             password=generate_password_hash(data.get('password'))
-        )
+         )
         
         new_user.save()
         
-        return jsonify({"message":"user created successfully"})
+        return jsonify({"message":"user created successfully"}), 201
         
         
     
 @api.route('/login')
 class Login(Resource):
+    
+    @api.expect(login_model)
     def post(self):
-        pass
+    
+        data=request.get_json()
+        
+        username=data.get('username')
+        password=data.get('password')
+        
+        db_user=User.query.filter_by(username=username).first()
+        
+        
+        
+        if db_user and check_password_hash(db_user.password, password):
+            
+            access_token=create_access_token(identity=db_user.username)
+            refresh_token=create_refresh_token(identity=db_user.username)
+            
+            return jsonify({
+                "access_token": access_token, 
+                "refresh_token": refresh_token}
+            ),200
+        
+        return {"message":"Invalid credentials"},401       
         
 
 @api.route('/Itinerary')
@@ -112,7 +148,7 @@ class ItinerariesResource(Resource):
             date=data.get('date')
         )
         new_itinerary.save()
-        return new_itinerary, 201  
+        return jsonify(new_itinerary), 201  
                       
     
 @api.route('/Itinerary/<int:id>')
@@ -121,14 +157,15 @@ class ItineraryResource(Resource):
     def get(self, id):
         itinerary = Itinerary.get_or_404(id)
         
-        return itinerary
+        return jsonify(itinerary)
     
     @api.marshal_with(Itinerary_model)
+    @jwt_required()
     
     def put(self, id):
         itinerary_to_update=Itinerary.get_or_404(id)
         data=request.get_json()
-        itinerary_to_update(
+        itinerary_to_update.update(
             data.get('title'),
             data.get('user_id'),
             data.get('destination'),
@@ -136,17 +173,18 @@ class ItineraryResource(Resource):
             data.get('date')
             
             )
-        return itinerary_to_update, 200
+        return jsonify(itinerary_to_update), 200
     
     
         
     @api.marshal_with(Itinerary_model)
+    @jwt_required()
     
     def delete(self, id):
         itinerary_to_delete=Itinerary.get_or_404(id)
         itinerary_to_delete.delete()
         
-        return {"message": "Itinerary deleted successfully"}, 200
+        return jsonify({"message": "Itinerary deleted successfully"}), 200
     
 
 @api.route('/User')
@@ -166,7 +204,8 @@ class UsersResource(Resource):
         new_user=User(
             username=data.get('username'),
             email=data.get('email'),
-            phone_number=data.get('phone_number')
+            phone_number=data.get('phone_number'),
+            password=generate_password_hash(data.get('password'))
         )
         new_user.save()
         

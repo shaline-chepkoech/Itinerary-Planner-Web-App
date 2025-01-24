@@ -12,6 +12,7 @@ class DevConfig(Config):
         SQLALCHEMY_DATABASE_URI = "sqlite:///"+os.path.join(BASE_DIR, 'dev.db')
         DEBUG = True
         SQLALCHEMY_ECHO = True
+        #JWT_SECRET_KEY = config('JWT_SECRET_KEY', default='secret')
         
 class ProdConfig(Config):
         pass

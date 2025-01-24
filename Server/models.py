@@ -21,7 +21,7 @@ class User(db.Model):
         db.session.commit()
         
     def update(self, username, email, phone_number):
-        self.name = username
+        self.username = username
         self.email = email
         self.phone_number = phone_number        
         db.session.commit()
@@ -46,10 +46,11 @@ class Itinerary(db.Model):
     def delete(self):
         db.session.delete(self)
         
-    def update(self, title, destination, details):
+    def update(self, title, destination, details, date):
         self.title = title
         self.destination = destination
         self.details = details
+        self.date = date
         db.session.commit()   
         
     def __repr__(self):
