@@ -1,261 +1,47 @@
-from flask import Flask, jsonify, request
-from flask_restx import Api, Resource, fields
+from flask import Flask
+from flask_restx import Api
 from config import DevConfig
 from models import User
 from models import Itinerary
 from exts import db
 from flask_migrate import Migrate
-from flask_cors import CORS
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask import jsonify
-from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required
+#from flask_cors import CORS
+from flask_jwt_extended import JWTManager
+from auth import auth_ns
+from itineraries import itinerary_ns
 
-
-app = Flask(__name__)
-app.config.from_object(DevConfig)
+def create_app(config):
+    app = Flask(__name__)
+    app.config.from_object(config)
 #app.config['JWT_SECRET_KEY'] = 'password'  
 
-CORS(app)
+    #CORS(app)
 
-db.init_app(app)
+    db.init_app(app)
 
 
-migrate = Migrate(app, db)
+    migrate = Migrate(app, db)
 
-jwt = JWTManager(app)
+    JWTManager(app)
 
-api = Api(app, doc='/docs')
+    api = Api(app, doc='/docs')
+    
+    api.add_namespace(itinerary_ns)
+    api.add_namespace(auth_ns)
 
-Itinerary_model = api.model(
-    'Itinerary',
-    {
-        'id': fields.Integer(description='The unique identifier of an itinerary.'),
-        'title': fields.String(required=True, description='The title of the itinerary.'),
-        'user_id': fields.Integer(required=True, description='The id of the user who created the itinerary.'),
-        'destination': fields.String(required=True, description='The destination of the itinerary.'),
-        'details': fields.String(required=True, description='The details of the itinerary.'),
-        'date': fields.Date(required=True, description='The date of the itinerary.')
-        }
-    )
 
-User_model = api.model(
-    'User',
-    {
-        "id": fields.Integer(description='The unique identifier of a user.'),
-        'username': fields.String(required=True, description='The name of the user.'),
-        'email': fields.String(required=True, description='The email of the user.'),
-        'phone_number': fields.String(required=True, description='The phone number of the user.'),
-        'password': fields.String(required=True, description= 'The password of the user.')
-    }
-    )
-signup_model = api.model(
-    'Signup',
-    {
-        'username': fields.String(required=True, description='The username for the user.'),
-        'email': fields.String(required=True, description='The email for the user.'),
-        'phone_number': fields.String(required=True, description='The phone number for the user.'),
-        'password': fields.String(required=True, description='The password for the user.')
-    }
-    )
 
-login_model = api.model(
-    'Login',
-    {
-        'username': fields.String(required=True, description='The username for the user.'),
-        'password': fields.String(required=True, description='The password for the user.')
-    }
-    )
-
-@api.route('/hello')
-class HelloResource(Resource):
-    def get(self):
-        return {'message': 'Hello, World!'}
-  
-@api.route('/signup')
-class Signup(Resource): 
-    @api.expect(signup_model)
-    def post(self):
-        data=request.get_json()
-        
-        username=data.get('username')
-        
-        db_user=User.query.filter_by(username=username).first()
-        
-        if db_user is not None:
-            return {"message":f"user with username {username} already exists"}
-            
-        new_user=User(
-            username=data.get('username'),
-            email=data.get('email'),
-            phone_number=data.get('phone_number'),
-            password=generate_password_hash(data.get('password'))
-         )
-        
-        new_user.save()
-        
-        return jsonify({"message":"user created successfully"}), 201
-        
-        
-    
-@api.route('/login')
-class Login(Resource):
-    
-    @api.expect(login_model)
-    def post(self):
-    
-        data=request.get_json()
-        
-        username=data.get('username')
-        password=data.get('password')
-        
-        db_user=User.query.filter_by(username=username).first()
-        
-        
-        
-        if db_user and check_password_hash(db_user.password, password):
-            
-            access_token=create_access_token(identity=db_user.username)
-            refresh_token=create_refresh_token(identity=db_user.username)
-            
-            return jsonify({
-                "access_token": access_token, 
-                "refresh_token": refresh_token}
-            ),200
-        
-        return {"message":"Invalid credentials"},401       
-        
-
-@api.route('/Itinerary')
-class ItinerariesResource(Resource):
-    @api.marshal_list_with(Itinerary_model)
-    def get(self):
-        
-        itineraries = Itinerary.query.all()
-        
-        return itineraries
-    
-    @api.marshal_with(Itinerary_model)
-    @api.expect(Itinerary_model)
-    def post(self):
-        
-        data=request.get_json()
-        
-        new_itinerary=Itinerary(
-            title=data.get('title'),
-            user_id=data.get('user_id'),
-            destination=data.get('destination'),
-            details=data.get('details'),
-            date=data.get('date')
-        )
-        new_itinerary.save()
-        return jsonify(new_itinerary), 201  
-                      
-    
-@api.route('/Itinerary/<int:id>')
-class ItineraryResource(Resource):
-    @api.marshal_with(Itinerary_model)
-    def get(self, id):
-        itinerary = Itinerary.get_or_404(id)
-        
-        return jsonify(itinerary)
-    
-    @api.marshal_with(Itinerary_model)
-    @jwt_required()
-    
-    def put(self, id):
-        itinerary_to_update=Itinerary.get_or_404(id)
-        data=request.get_json()
-        itinerary_to_update.update(
-            data.get('title'),
-            data.get('user_id'),
-            data.get('destination'),
-            data.get('details'),
-            data.get('date')
-            
-            )
-        return jsonify(itinerary_to_update), 200
-    
-    
-        
-    @api.marshal_with(Itinerary_model)
-    @jwt_required()
-    
-    def delete(self, id):
-        itinerary_to_delete=Itinerary.get_or_404(id)
-        itinerary_to_delete.delete()
-        
-        return jsonify({"message": "Itinerary deleted successfully"}), 200
-    
-
-@api.route('/User')
-class UsersResource(Resource):
-    @api.marshal_list_with(User_model)
-    def get(self):
-        
-        users = User.query.all()
-        
-        return users
-        
-    @api.marshal_with(User_model)
-    def post(self):
-        
-        data=request.get_json()
-        
-        new_user=User(
-            username=data.get('username'),
-            email=data.get('email'),
-            phone_number=data.get('phone_number'),
-            password=generate_password_hash(data.get('password'))
-        )
-        new_user.save()
-        
-        return new_user, 201         
-        
-    
-    
-@api.route('/User/<int:id>')
-class UserResource(Resource):
-     
-     @api.marshal_with(User_model)
-     def get(self,id):
-         #get user by id
-        user=User.query.get_or_404(id)
-        
-        return user
-    
-     @api.marshal_with(User_model)
-     def put(self,id):
-         
-         user_to_update=User.query.get_or_404(id)
-         
-         data=request.get_json()
-         
-         user_to_update.update(
-             data.get('username'),
-             data.get('email'),
-             data.get('phone_number')
-             
-         )
-         return user_to_update, 200
-     
-     @api.marshal_with(User_model)
-     
-     def delete(self, id):
-         user_to_delete=User.query.get_or_404(id)
-         
-         user_to_delete.delete()
-         
-         return {'message': 'User deleted successfully.'}, 200
-     
-    
-@app.shell_context_processor
-def make_shell_context():
-    return {
+    @app.shell_context_processor
+    def make_shell_context():
+        return {
             'db': db, 
-            'User': User,
-            "Itinerary": Itinerary
-            
+            "Itinerary": Itinerary,
+            "User": User
             }
+        
+    return app   
+     
+    
    
     
 # class Itinerary(db.Model):
@@ -309,6 +95,4 @@ def make_shell_context():
     
     
     
-if __name__ == "__main__":
-    app.run(debug=True)       
 
