@@ -5,7 +5,7 @@ from models import User
 from models import Itinerary
 from exts import db
 from flask_migrate import Migrate
-#from flask_cors import CORS
+from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from auth import auth_ns
 from itineraries import itinerary_ns
@@ -15,7 +15,7 @@ def create_app(config):
     app.config.from_object(config)
 #app.config['JWT_SECRET_KEY'] = 'password'  
 
-    #CORS(app)
+    CORS(app)
 
     db.init_app(app)
 
