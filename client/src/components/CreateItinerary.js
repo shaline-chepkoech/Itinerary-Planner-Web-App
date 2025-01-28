@@ -5,7 +5,7 @@ const CreateItinerary =()=>{
 
     return (
         <div className="create-itinerary">
-            <h1>Create Itinerary</h1>
+            <h1>Create Itinerary Page</h1>
         </div>
     )
 
