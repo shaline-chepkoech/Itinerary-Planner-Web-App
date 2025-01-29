@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from 'react-bootstrap'
+import { Card, Modal } from 'react-bootstrap'
 
 const Itinerary=(title, description)=>{
     return (
@@ -7,6 +7,7 @@ const Itinerary=(title, description)=>{
         <Card.Body >
             <Card.Title>{title}</Card.Title>
             <p>{description}</p>
+            <Button variant="primary">Update</Button>
             </Card.Body>
             </Card>
     )

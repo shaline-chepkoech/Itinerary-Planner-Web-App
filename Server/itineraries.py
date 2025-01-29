@@ -11,7 +11,7 @@ itinerary_ns=Namespace('itinerary', description= "A namespace for Itineraries ")
 Itinerary_model = itinerary_ns.model(
     'Itinerary',
     {
-        'id': fields.Integer(description='The unique identifier of an itinerary.'),
+        
         'title': fields.String(required=True, description='The title of the itinerary.'),
         'user_id': fields.Integer(required=True, description='The id of the user who created the itinerary.'),
         'destination': fields.String(required=True, description='The destination of the itinerary.'),
@@ -27,15 +27,17 @@ class ItinerariesResource(Resource):
         
         itineraries = Itinerary.query.all()
         
-        return jsonify([itinerary.to_dict() for itinerary in itineraries])
+        return [itinerary.to_dict() for itinerary in itineraries], 200 
 
     @itinerary_ns.marshal_with(Itinerary_model)
+        
     @itinerary_ns.expect(Itinerary_model)
     def post(self):
         
         data=request.get_json()
         
         new_itinerary=Itinerary(
+        
             title=data.get('title'),
             user_id=data.get('user_id'),
             destination=data.get('destination'),
@@ -43,7 +45,7 @@ class ItinerariesResource(Resource):
             date=data.get('date')
         )
         new_itinerary.save()
-        return jsonify(new_itinerary.to_dict()), 201
+        return new_itinerary, 201 
 
                       
     
