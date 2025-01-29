@@ -1,19 +1,22 @@
-import React from "react"
+import React, { useState } from "react";
+import Container from 'react-bootstrap/Container';
+import Navbar from'react-bootstrap/Navbar';
+import Nav from'react-bootstrap/Nav';
 import { Link } from "react-router-dom"
-import { useAuth } from "../auth"
+import { useAuth, logout } from "../auth"
 
 const LoggedInLinks = ()=>{
-  return(
-    
+  return(    
       <>
-     
-
       <li className="nav-item">
-            <Link className="nav-link active" to="/">Log Out</Link>
+      <button className="nav-link active" onClick={()=>{logout()}}>Log Out</button>
            </li>
+           <li className="nav-item">
+        <Link className="nav-link" to="/">Home</Link>
+      </li>
 
            <li className="nav-item">
-          <Link className="nav-link active" to="/create-itinerary"> Create Itinerary</Link>
+          <Link className="nav-link" to="/create-itinerary"> Create Itinerary</Link>
           </li>
           <li className="nav-item">
           <Link className="nav-link active" to="/" >Itineraries</Link>
@@ -28,47 +31,45 @@ const LoggedOutLinks = ()=>{
   return(
    
     <>
-    <Link className="navbar-brand" to= "/home">Home</Link>
+   <li className="nav-item">
+        <Link className="nav-link" to="/home">Home</Link>
+      </li>
     <li className="nav-item">
-          <Link className="nav-link active" to="/signup">Sign Up</Link>
+          <Link className="nav-link" to="/signup">Sign Up</Link>
         </li>
         <li className="nav-item">
-          <Link className="nav-link active" to="/login" >Login</Link>
+          <Link className="nav-link" to="/login" >Login</Link>
         </li>
-
     </>
-  
-
-
-  )
-}
+  );
+};
 
 
 const NavBar =()=>{
 
-  const { logged } = useAuth();
-  console.log("Logged status:", logged);
-  
+  const [ logged ] = useAuth();
+  const [expanded, setExpanded] = useState(false);
 
     return (
-<nav className="navbar navbar-expand-lg navbar-dark bg-dark fixed-top ">
-  <div className="container-fluid">
+<Navbar expanded={expanded} bg="dark" variant="dark" expand="lg" onToggle={() => setExpanded(!expanded)}>
+<Container>
     
-    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-      <span className="navbar-toggler-icon"></span>
-    </button>
-    <div className="collapse navbar-collapse" id="navbarNavDropdown">
-      <ul className="navbar-nav">
-      {logged ? <LoggedInLinks /> : <LoggedOutLinks />}
-               
-      
-          </ul>
-        
-      
-    </div>
-  </div>
-</nav>
-    )
-}
+<Navbar.Brand as={Link} to="/">Navigate</Navbar.Brand>
+        <Navbar.Toggle aria-controls="navbar-nav" />
+        <Navbar.Collapse id="navbar-nav">
+          <Nav className="me-auto">
+            {logged ? (
+              // Show LoggedInLink if logged in
+              <LoggedInLinks />
+            ) : (
+              // Show LoggedOutLink if not logged in
+              <LoggedOutLinks />
+            )}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+      </Navbar>
+  );
+};
 
-export default NavBar
+export default NavBar;
