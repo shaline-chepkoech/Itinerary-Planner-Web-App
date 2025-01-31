@@ -1,18 +1,20 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './styles/main.css';
+import './main.css';
 import React from 'react'
 import ReactDOM from 'react-dom';
-import NavBar from './components/Navbar';
+import NavBar from './Navbar';
 import {
     BrowserRouter as Router,
     Routes,
     Route,
   } from "react-router-dom";
-import HomePage from './components/Home';
-import LoginPage from './components/Login';
-import SignUpPage from './components/SignUp';
-import CreateItinerary from './components/CreateItinerary';
-import Dropdown from './components/Dropdown';
+import HomePage from './Home';
+import LoginPage from './Login';
+import SignUpPage from './SignUp';
+
+import CreateItinerary from './CreateItinerary';
+
+import Dropdown from './Dropdown';
 
 
 const App =()=>{
