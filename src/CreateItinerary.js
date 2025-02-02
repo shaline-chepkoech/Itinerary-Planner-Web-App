@@ -27,7 +27,7 @@ const CreateItineraryPage = () => {
         body: JSON.stringify(data),
       };
 
-      fetch("http://localhost:5000/itinerary/itinerary", requestOptions)
+      fetch("https://backend-1-hpyb.onrender.com/itinerary/itinerary", requestOptions)
         .then((res) => res.json())
         .then((data) => {
           console.log("Response:", data);
