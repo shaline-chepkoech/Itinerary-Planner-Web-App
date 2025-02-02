@@ -4,12 +4,12 @@ import { Modal, Form, Button } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useAuth } from "./auth";
 import Itinerary from "./Itinerary";
-import CreateItinerary from "./CreateItinerary";
+
 
 const LoggedinHome = () => {
   const [itineraries, setItineraries] = useState([]);
   const [show, setShow] = useState(false);
-  const { register, reset, handleSubmit, setValue, formState: { errors } } = useForm();
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
   const [itineraryId, setItineraryId] = useState(0); 
 
   useEffect(() => {

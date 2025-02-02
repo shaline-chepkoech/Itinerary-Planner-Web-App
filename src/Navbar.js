@@ -17,7 +17,7 @@ const handleLogout = ()=>{
   return(   
       <>
 <Nav.Link as={Link} to="/" className="text-light">Home</Nav.Link>
-      <Nav.Link as={Link} to="/create_note" className="text-light">Create Itineraries</Nav.Link>
+      <Nav.Link as={Link} to="/create-itinerary" className="text-light">Create Itineraries</Nav.Link>
       <Nav.Link onClick={handleLogout} className="text-light" style={{ cursor: "pointer" }}>Log Out</Nav.Link>
     </>
     
