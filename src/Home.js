@@ -121,7 +121,14 @@ const LoggedinHome = () => {
   };
 
   return (
-    <div className="itineraries container">
+    <div className="itineraries container"
+    style={{
+      backgroundImage: "url('/images/background.png')", 
+      backgroundSize: "cover", 
+      backgroundPosition: "center",
+      height: "100vh"
+    }}
+    >
       <Modal show={show} size="lg" onHide={closeModal}>
         <Modal.Header closeButton>
           <Modal.Title>Update Itinerary</Modal.Title>
@@ -177,8 +184,16 @@ const LoggedinHome = () => {
 
 const LoggedoutHome = () => {
   return (
-    <div className="home container">
+    <div className="home container"
+    style={{
+      backgroundImage: "url('/images/background.png')", 
+      backgroundSize: "cover", 
+      backgroundPosition: "center",
+      height: "100vh"
+    }}
+    >
       <h1>Welcome to Itinerary Planner Page</h1>
+      <p>Sign in to view your itineraries or Sign Up to start planning</p>
       <Link to='/signup' className="btn btn-primary">Get Started</Link>
     </div>
   );

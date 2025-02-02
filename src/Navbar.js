@@ -42,7 +42,7 @@ const NavBar = () => {
   return (
     <Navbar expanded={expanded} bg="dark" variant="dark" expand="lg" onToggle={() => setExpanded(!expanded)}>
       <Container>
-        <Navbar.Brand as={Link} to="/">Navigate</Navbar.Brand>
+        <Navbar.Brand as={Link} to="/">Dashboard</Navbar.Brand>
         <Navbar.Toggle aria-controls="navbar-nav" />
         <Navbar.Collapse id="navbar-nav">
         <Nav className="ms-auto">
