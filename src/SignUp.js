@@ -29,7 +29,7 @@ const SignUpPage =()=>{
         body: JSON.stringify(body)
       }
 
-      fetch('/auth/signup', requestOPtions)
+      fetch('https://backend-k0ku.onrender.com/auth/signup', requestOPtions)
        .then(response => response.json())
        .then(data => {
         setServerResponse(data.message)

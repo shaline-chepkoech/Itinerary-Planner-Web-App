@@ -17,7 +17,7 @@ const LoggedinHome = () => {
   }, []);
 
   const getAllItineraries = () => {
-    fetch('/itinerary/itinerary')
+    fetch('https://backend-k0ku.onrender.com/itinerary/itinerary')
       .then((res) => res.json())
       .then(data => setItineraries(data))
       .catch(err => console.error("Error fetching itineraries:", err));
@@ -63,7 +63,7 @@ const LoggedinHome = () => {
       body: JSON.stringify(data),
     };
   
-    fetch(`/itinerary/itinerary/${itineraryId}`, requestOptions)
+    fetch(`https://backend-k0ku.onrender.com/itinerary/itinerary/${itineraryId}`, requestOptions)
       .then((res) => {
         if (!res.ok) {
           return res.text().then((text) => {
@@ -105,7 +105,7 @@ const LoggedinHome = () => {
       },
     };
 
-    fetch(`/itinerary/itinerary/${itineraryId}`, requestOptions)
+    fetch(`https://backend-k0ku.onrender.com/itinerary/itinerary/${itineraryId}`, requestOptions)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to delete itinerary");
